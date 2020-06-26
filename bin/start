@@ -1,0 +1,13 @@
+#!/usr/bin/env ruby
+nginx_config_file = "/etc/nginx/conf.d/proxy.conf"
+env_variables_to_substitute = %w(BASE_DOMAIN GITLAB_PAGES_SERVER_ADDRESS)
+
+content = File.read(nginx_config_file)
+
+env_variables_to_substitute.each do |env_var_name|
+  content.gsub! "{{#{env_var_name}}}", ENV[env_var_name]
+end
+
+File.open(nginx_config_file, 'w') { |f| f.write content }
+
+`nginx -g "daemon off;"`
