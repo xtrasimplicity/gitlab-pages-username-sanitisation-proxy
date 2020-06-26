@@ -24,6 +24,7 @@ From GitLab's perspective, the request comes via HTTP (not HTTPS), but all traff
 This reverse proxy requires the following environment variables to be set:
   - BASE_DOMAIN <= The Fully-qualified domain name (FQDN) of your GitLab Pages installation.
   - GITLAB_PAGES_SERVER_ADDRESS <= The internal IP address/hostname of your GitLab Pages server. This is where the requests will be proxied.
+  - HTTP_ONLY <= Set to 'true' if you don't want the proxy server to use SSL. This is useful if you are deploying the proxy server behind another proxy server which handles SSL termination.
 
 If you have a wildcard SSL certificate that you'd like to use, simply mount it to `/certs` within the container. The proxy server will automatically use any PEM files in this folder named `cert.pem` and `key.pem`. If these files are not mounted, a self-signed wildcard certificate will be automatically generated.
 

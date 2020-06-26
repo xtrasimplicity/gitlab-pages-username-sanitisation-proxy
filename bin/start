@@ -1,19 +1,31 @@
 #!/usr/bin/env ruby
-nginx_config_file = "/etc/nginx/conf.d/proxy.conf"
+nginx_config_template_paths = {
+  :ssl => '/templates/nginx.ssl.conf',
+  :http_only => '/templates/nginx.http_only.conf'
+}
+
+http_only = ENV['HTTP_ONLY'] == 'true'
+
+nginx_config_template_path = http_only ? nginx_config_template_paths[:http_only] : nginx_config_template_paths[:ssl]
+
+target_nginx_config_file = "/etc/nginx/conf.d/proxy.conf"
 env_variables_to_substitute = %w(BASE_DOMAIN GITLAB_PAGES_SERVER_ADDRESS)
 certificate_base_path = "/certs"
 
-content = File.read(nginx_config_file)
+content = File.read(nginx_config_template_path)
 
 env_variables_to_substitute.each do |env_var_name|
   content.gsub! "{{#{env_var_name}}}", ENV[env_var_name]
 end
 
-File.open(nginx_config_file, 'w') { |f| f.write content }
+File.open(target_nginx_config_file, 'w') { |f| f.write content }
 
-unless File.exist?("#{certificate_base_path}/cert.pem") and File.exist?("#{certificate_base_path}/key.pem")
-  puts "Generating self-signed SSL certificates..."
-  system "openssl req -x509 -newkey rsa:4096 -keyout #{certificate_base_path}/key.pem -out #{certificate_base_path}/cert.pem -days 365 -nodes -subj='/CN=*.#{ENV['BASE_DOMAIN']}'"
+if ! http_only
+  unless File.exist?("#{certificate_base_path}/cert.pem") and File.exist?("#{certificate_base_path}/key.pem")
+    puts "Generating self-signed SSL certificates..."
+    system "openssl req -x509 -newkey rsa:4096 -keyout #{certificate_base_path}/key.pem -out #{certificate_base_path}/cert.pem -days 365 -nodes -subj='/CN=*.#{ENV['BASE_DOMAIN']}'"
+  end
 end
 
+puts "Starting NGinx..."
 `nginx -g "daemon off;"`
