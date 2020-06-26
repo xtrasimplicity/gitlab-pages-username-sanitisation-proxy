@@ -21,4 +21,34 @@ From GitLab's perspective, the request comes via HTTP (not HTTPS), but all traff
 - This only works if the initial request to `http://firstname.lastname.gitlab-pages-fqdn` is via HTTP.
 
 ## Usage
-_Coming soon!_
+This reverse proxy requires the following environment variables to be set:
+  - BASE_DOMAIN <= The Fully-qualified domain name (FQDN) of your GitLab Pages installation.
+  - GITLAB_PAGES_SERVER_ADDRESS <= The internal IP address/hostname of your GitLab Pages server. This is where the requests will be proxied.
+
+If you have a wildcard SSL certificate that you'd like to use, simply mount it to `/certs` within the container. The proxy server will automatically use any PEM files in this folder named `cert.pem` and `key.pem`. If these files are not mounted, a self-signed wildcard certificate will be automatically generated.
+
+### Example Docker command:
+```
+docker run -d \
+           --name gitlab-pages-url-sanitiser \
+           -p 443:443 \
+           -p 80:80 \
+           -v $PWD/certs:/certs \
+           --env BASE_DOMAIN=pages.mycorp.local \
+           --env GITLAB_PAGES_SERVER_ADDRESS=http://10.1.1.1:80 \
+           xtrasimplicity/gitlab-pages-username-sanitisation-proxy 
+```
+### Example `docker-compose.yml` file:
+```
+---
+version: '3.5'
+services:
+  proxy:
+    image: xtrasimplicity/gitlab-pages-username-sanitisation-proxy
+    ports:
+      - 80:80
+      - 443:443
+    environment:
+      BASE_DOMAIN: pages.mycorp.local
+      GITLAB_PAGES_SERVER_ADDRESS: http://10.1.1.1:80
+```
