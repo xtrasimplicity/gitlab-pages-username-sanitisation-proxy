@@ -18,6 +18,11 @@ env_variables_to_substitute.each do |env_var_name|
   content.gsub! "{{#{env_var_name}}}", ENV[env_var_name]
 end
 
+content.gsub! "{{LOG_CONFIG}}", <<-EOF
+  access_log /dev/stdout combined;
+  error_log /dev/stderr info;
+EOF
+
 File.open(target_nginx_config_file, 'w') { |f| f.write content }
 
 if ! http_only
