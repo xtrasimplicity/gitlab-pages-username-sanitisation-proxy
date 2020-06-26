@@ -11,4 +11,6 @@ RUN rm /etc/nginx/conf.d/default.conf && \
     chmod +x /usr/sbin/start
 
 EXPOSE 80 443
+VOLUME /certs
+
 CMD /usr/sbin/start
